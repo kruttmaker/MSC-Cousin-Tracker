@@ -16,8 +16,8 @@ namespace Cousin_Tracker
         // This will create subfolder in Assets folder for your mod.
         public override bool UseAssetsFolder => false;
 
-        private float checkevery;
-        private float lastcheck;
+        private float checkinterval;
+        private float timerlastcheck;
         private float timer;
 
         private float lastdistance;
@@ -25,10 +25,10 @@ namespace Cousin_Tracker
         private bool warningfirst;
         private bool warningsecond;
 
-        static Settings smaxdistance = new Settings("MaxDistance", "Max distance for detecting your cousin", 500f, SetMaxDistance);
-        static Settings sfirstwarningdistance = new Settings("FirstWarningDistance", "First warning distance", 300f, SetFirstWarningDistance);
-        static Settings ssecondwarningdistance = new Settings("SecondWarningDistance", "Second warning distance", 150f, SetSecondWarningDistance);
-        static Settings smustdrivecar = new Settings("MustDriveCar", "Player must be driving a vehicle to be warned", true, SetMustDriveCar);
+        static Settings smaxdistance = new Settings("MaxDistance", "Max distance for detecting your cousin", 500f);
+        static Settings sfirstwarningdistance = new Settings("FirstWarningDistance", "First warning distance", 300f);
+        static Settings ssecondwarningdistance = new Settings("SecondWarningDistance", "Second warning distance", 150f);
+        static Settings smustdrivecar = new Settings("MustDriveCar", "Player must be driving a vehicle to be warned", true);
 
         public override void OnNewGame()
         {
@@ -39,8 +39,8 @@ namespace Cousin_Tracker
         {
             // Called once, when mod is loading after game is fully loaded 
 
-            checkevery = 2f;
-            lastcheck = Time.deltaTime;
+            checkinterval = 2f;
+            timerlastcheck = Time.deltaTime;
 
             warningfirst = false;
             warningsecond = false;
@@ -70,45 +70,13 @@ namespace Cousin_Tracker
         {
             // All settings should be created here. 
             // DO NOT put anything else here that settings.
-            Settings.AddSlider(this, smaxdistance, 400f, 800f);
+            Settings.AddSlider(this, smaxdistance, 550f, 900f);
 
             Settings.AddSlider(this, sfirstwarningdistance, 200f, 500f);
 
             Settings.AddSlider(this, ssecondwarningdistance, 100f, 200f);
 
             Settings.AddCheckBox(this, smustdrivecar);
-        }
-
-        public static void SetMustDriveCar()
-        {
-        //  bool tmp = (bool)smustdrivecar.GetValue();
-        //  mustdrivercar = tmp;
-        //    ModConsole.Print("Must drive car is now: "+ smustdrivecar.GetValue().ToString());
-            return;
-        }
-
-        public static void SetMaxDistance()
-        {
-         //   float tmp = (float)smaxdistance.GetValue();
-         //   ModConsole.Print("max distance is now: " + smaxdistance.GetValue().ToString());
-         //   maxdistance = tmp;
-            return;
-        }
-
-        public static void SetFirstWarningDistance()
-        {
-            //    float tmp = (float)sfirstwarningdistance.GetValue();
-            //    ModConsole.Print("first warning distance is now: " + sfirstwarningdistance.GetValue().ToString());
-            //    firstwarningdistance = tmp;
-            return;
-        }
-
-        public static void SetSecondWarningDistance()
-        {
-            //    float tmp = (float)ssecondwarningdistance.GetValue();
-            //    ModConsole.Print("second warning distance is now: " + ssecondwarningdistance.GetValue().ToString());
-            //    secondwarningdistance = tmp;
-            return;
         }
 
         public override void OnSave()
@@ -127,7 +95,7 @@ namespace Cousin_Tracker
         {
             timer += Time.deltaTime;
 
-            if ((timer - lastcheck) > checkevery)
+            if ((timer - timerlastcheck) > checkinterval)
             {
                 if ( (bool.Parse(smustdrivecar.GetValue().ToString()) && !PlayerInCar()))
                     return;
@@ -151,10 +119,9 @@ namespace Cousin_Tracker
                     SendMessage("Watch out, it is your cousin!");
                     warningsecond = true;
                 }
-
-                
+               
                 lastdistance = distance;
-                lastcheck = timer;
+                timerlastcheck = timer;
             }
         }
     }
