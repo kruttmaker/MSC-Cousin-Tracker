@@ -1,2 +1,5 @@
 # msc-cousin-tracker
-Mod that warns you when your cousins car is getting closer while you are driving.
+
+A mod for the game My Summer Car using MSC Loader.
+
+This Mod warns you through subtitles when your cousins car is getting closer while you are driving.
