@@ -26,13 +26,13 @@ namespace Cousin_Tracker
         public override string Name => "Cousin Tracker"; //You mod name
         public override string Author => "kruttmaker"; //Your Username
         public override string Version => "0.2.1"; //Version
-       
 
-        // Set this to true if you will be load custom assets from Assets folder.
-        // This will create subfolder in Assets folder for your mod.
-        public override bool UseAssetsFolder => false;
+        Transform player;
+        Transform fittan;
 
-        private float checkinterval;
+        FsmString playerCurrentVehicleFsmString;
+
+        const float checkinterval = 2;
         private float timerlastcheck;
         private float timer;
 
@@ -46,30 +46,28 @@ namespace Cousin_Tracker
         static Settings ssecondwarningdistance = new Settings("SecondWarningDistance", "Second warning distance", 150f);
         static Settings smustdrivecar = new Settings("MustDriveCar", "Player must be driving a vehicle to be warned", true);
 
-        public override void OnNewGame()
-        {
-            // Called once, when starting a New Game, you can reset your saves here
-        }
-
         public override void OnLoad()
         {
-            // Called once, when mod is loading after game is fully loaded 
+            // Called once, when mod is loading after game is fully loaded
 
-            checkinterval = 2f;
             timerlastcheck = Time.deltaTime;
 
             warningfirst = false;
             warningsecond = false;
 
-            ModConsole.Print("<color=yellow>Cousin Tracker v"+ Version +" loaded</color>");
+            // We're storing the player and Fittan transforms on load.
+            // Looking for objects every frame is very expensive.
+            player = GameObject.Find("PLAYER").transform;
+            fittan = GameObject.Find("TRAFFIC").transform.Find("VehiclesDirtRoad/Rally/FITTAN").transform;
+
+            playerCurrentVehicleFsmString = FsmVariables.GlobalVariables.FindFsmString("PlayerCurrentVehicle");
+
+            ModConsole.Print("<color=yellow>Cousin Tracker v" + Version + " loaded</color>");
         }
 
         private float DistanceToFITTAN()
         {
-            Vector3 playerv = GameObject.Find("PLAYER").transform.position;
-            Vector3 thedickv = GameObject.Find("FITTAN").transform.position;
-
-            return Vector3.Distance(playerv, thedickv);        
+            return Vector3.Distance(player.position, fittan.position);
         }
 
         private void SendMessage(string message)
@@ -77,14 +75,14 @@ namespace Cousin_Tracker
             PlayMakerGlobals.Instance.Variables.FindFsmString("GUIsubtitle").Value = message;
         }
 
-        private bool PlayerInCar ()
+        private bool PlayerInCar()
         {
-            return !FsmVariables.GlobalVariables.FindFsmString("PlayerCurrentVehicle").ToString().Equals(""); ;
+            return !string.IsNullOrEmpty(playerCurrentVehicleFsmString.Value);
         }
 
         public override void ModSettings()
         {
-            // All settings should be created here. 
+            // All settings should be created here.
             // DO NOT put anything else here that settings.
             Settings.AddSlider(this, smaxdistance, 550f, 900f);
 
@@ -95,17 +93,6 @@ namespace Cousin_Tracker
             Settings.AddCheckBox(this, smustdrivecar);
         }
 
-        public override void OnSave()
-        {
-            // Called once, when save and quit
-            // Serialize your save file here.
-        }
-
-        public override void OnGUI()
-        {
-            // Draw unity OnGUI() here
-        }
-
         // Update is called once per frames
         public override void Update()
         {
@@ -113,21 +100,21 @@ namespace Cousin_Tracker
 
             if ((timer - timerlastcheck) > checkinterval)
             {
-                if ( (bool.Parse(smustdrivecar.GetValue().ToString()) && !PlayerInCar()))
+                if ((bool.Parse(smustdrivecar.GetValue().ToString()) && !PlayerInCar()))
                     return;
 
                 float distance = DistanceToFITTAN();
 
-                if (distance > float.Parse(smaxdistance.GetValue().ToString()) )
+                if (distance > float.Parse(smaxdistance.GetValue().ToString()))
                 {
                     warningfirst = false;
                     warningsecond = false;
                     return;
                 }
-            
+
                 if (!warningfirst && distance < float.Parse(sfirstwarningdistance.GetValue().ToString()) && distance < lastdistance)
                 {
-                    SendMessage("You Think you see a cloud of dust up ahead..");
+                    SendMessage("You think you see a cloud of dust up ahead..");
                     warningfirst = true;
                 }
                 if (!warningsecond && distance < float.Parse(ssecondwarningdistance.GetValue().ToString()) && distance < lastdistance)
@@ -135,7 +122,7 @@ namespace Cousin_Tracker
                     SendMessage("Watch out, it is your cousin!");
                     warningsecond = true;
                 }
-               
+
                 lastdistance = distance;
                 timerlastcheck = timer;
             }
