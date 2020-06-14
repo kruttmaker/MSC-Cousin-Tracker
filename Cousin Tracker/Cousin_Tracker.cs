@@ -25,7 +25,7 @@ namespace Cousin_Tracker
         public override string ID => "Cousin_Tracker"; //Your mod ID (unique)
         public override string Name => "Cousin Tracker"; //You mod name
         public override string Author => "kruttmaker"; //Your Username
-        public override string Version => "0.2.1"; //Version
+        public override string Version => "0.2.2"; //Version
 
         Transform player;
         Transform fittan;
